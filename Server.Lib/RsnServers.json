@@ -1,0 +1,32 @@
+{
+  "RsnServerList": {
+    "2017": [
+      "vpp-revit01",
+      "vpp-revit02",
+      "vpp-revit03",
+      "vpp-revit04",
+      "vpp-revit05",
+      "vpp-revit06",
+      "vpp-revit17_btr",
+      "vpp-revittest01"
+    ],
+    "2019": [
+      "vpp-revit19_1",
+      "vpp-revit19_2",
+      "vpp-revit19_3",
+      "vpp-revit19_4k",
+      "vpp-revit19_4n",
+      "vpp-revit19_5",
+      "vpp-revit19_7",
+      "vpp-revit19_8",
+      "vpp-revit19_btr",
+      "vpp-revit19_mod",
+      "vpp-revit19_skb",
+      "vpp-revit19_t1",
+      "vpp-revit19_ekb",
+      "vpp-revit19_nsb",
+      "vpp-revit19_rst",
+      "vpp-revit19_spb"
+    ]
+  }
+}
