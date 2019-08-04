@@ -92,20 +92,5 @@ namespace Server.Assembler.Api.Controllers
         return BadRequest("Ошибка:\n" + e.Message);
       }
     }
-
-    [HttpPost]
-    [Route("folder")]
-    public ActionResult<string> ExportModelToNavisToFolder([FromForm] string filePath, [FromForm] string targetFolder)
-    {
-      try
-      {
-        return Ok();
-
-      }
-      catch (Exception e)
-      {
-        return BadRequest("Ошибка:\n" + e.Message);
-      }
-    }
   }
 }
