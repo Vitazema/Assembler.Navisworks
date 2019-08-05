@@ -9,7 +9,7 @@ namespace Server.Assembler.ModelExportService.Services
 {
   public class ExportService : IExportService
   {
-    public const string exportFolder = @"\\picompany.ru\pikp\Dep\IT\_SR_Public\01_BIM\20_Выгрузки\_Tests";
+    public const string defaultExportFolder = @"\\picompany.ru\pikp\Dep\IT\_SR_Public\01_BIM\20_Выгрузки\_Tests";
 
     private readonly RsnCommander rsnCommander;
 
@@ -35,14 +35,19 @@ namespace Server.Assembler.ModelExportService.Services
         fs.Write(line, 0, line.Length);
       }
 
-      var navisOutput = navisCommander.BatchExportToNavis(tempConfigFile, file.serverVersion, false, exportFolder);
+      var navisOutput = navisCommander.BatchExportToNavis(tempConfigFile, file.serverVersion, false, defaultExportFolder);
 
       log.Add(navisOutput);
 
       return string.Join("\n", log);
     }
 
-    public string BatchExportModelsToNavis(List<RsnFileInfo> files, string outFolder = exportFolder)
+    public string BatchExportModelToNavisParallel(List<RsnFileInfo> files, string outFolder = defaultExportFolder)
+    {
+
+    }
+
+    public string BatchExportModelsToNavis(List<RsnFileInfo> files, string outFolder = defaultExportFolder)
     {
       var log = new List<string>();
 
@@ -50,8 +55,7 @@ namespace Server.Assembler.ModelExportService.Services
 
       foreach (KeyValuePair<int, List<RsnFileInfo>> group in exportModels)
       {
-        var random = new Random();
-        var tempConfigFile = Path.GetTempPath() + "temp" + random.Next(10000, 99999) + ".txt";
+        var tempConfigFile = Path.GetTempPath() + "temp" + new Random().Next(10000, 99999) + ".txt";
 
         using (var sw = new StreamWriter(File.Create(tempConfigFile), Encoding.UTF8))
         {
@@ -80,7 +84,7 @@ namespace Server.Assembler.ModelExportService.Services
 
           if (File.Exists(file.tempPath))
           {
-            var destFilePath = Path.Combine(exportFolder, file.projectFileFullPathWithoutServername);
+            var destFilePath = Path.Combine(defaultExportFolder, file.projectFileFullPathWithoutServername);
             File.Copy(file.tempPath, destFilePath, true);
             log.Add($"Model copied: {destFilePath}");
           }
@@ -98,7 +102,7 @@ namespace Server.Assembler.ModelExportService.Services
       return string.Join("\n", log);
     }
 
-    public string RevitModelExport(RsnFileInfo file, string folder = exportFolder)
+    public string RevitModelExport(RsnFileInfo file, string folder = defaultExportFolder)
     {
       var log = new List<string>();
 
