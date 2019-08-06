@@ -85,11 +85,57 @@ namespace Server.Assembler.Api.Controllers
           rsnFiles.Add(file);
         }
 
-        return Ok(result + "\n" + navisService.BatchExportModelsToNavis(rsnFiles, task.OutFolder));
+        return Ok(result + "\n"
+          + navisService.BatchExportModelsToNavis(rsnFiles, task.OutFolder));
       }
       catch (Exception e)
       {
         return BadRequest("Ошибка:\n" + e.Message);
+      }
+    }
+
+    [HttpPost]
+    [Route("parallel")]
+    public ActionResult<string> BatchPalallelExportToNavisworks(ExportTask task)
+    {
+      try
+      {
+        if (!ModelState.IsValid)
+        {
+          return BadRequest(ModelState);
+        }
+
+        var filePaths = task.Files;
+
+        var result = string.Empty;
+        var rsnFiles = new List<RsnFileInfo>();
+
+        if (filePaths.Count == 0)
+          return BadRequest();
+
+        foreach (var filePath in filePaths)
+        {
+          var file = new RsnFileInfo(filePath);
+
+          if (file.rsnFilePath == null)
+            result += $"\nПуть для файла не может быть обработан: {file}";
+
+          if (!file.rsnFilePath.IsValidForRsnModelPath())
+            result += $"\n Не валидный файл для RSN: {file}";
+
+          rsnFiles.Add(file);
+        }
+
+        return Ok(result + "\n"
+                         + navisService.BatchExportModelToNavisParallel(
+                           rsnFiles,
+                           task.RsnStructure,
+                           task.OutFolder));
+
+      }
+      catch (Exception e)
+      {
+        return BadRequest("!!! Ошибка !!!\n" + e.Message);
       }
     }
   }

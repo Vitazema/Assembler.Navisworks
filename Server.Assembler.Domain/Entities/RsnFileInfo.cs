@@ -30,6 +30,8 @@ namespace Server.Assembler.Domain.Entities
 
     public string serverName => rawFilePath.ExtractServerNameWithoutDomain();
 
+    public string projectDirectory { get; set; }
+
     /// <summary>
     /// Temporary server place for copied file from RSN (local user temp folder)
     /// </summary>
@@ -57,8 +59,10 @@ namespace Server.Assembler.Domain.Entities
       }
 
       fileFullName = Path.GetFileName(rawFilePath);
-
+      
       tempPath = Path.Combine(Path.GetTempPath() + $"{serverName}\\{projectFileFullPathWithoutServername}");
+
+      projectDirectory = Path.GetDirectoryName(projectFileFullPathWithoutServername);
     }
   }
 }
