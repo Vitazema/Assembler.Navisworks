@@ -74,7 +74,7 @@ namespace Server.Assembler.Tests
     {
       var fileName = @"\\vpp-rebkgui,kiu.main.picompany.ru\D$\RS17\Prj\00-Navis\tst\СССР.rvt";
 
-      var log = rsnController.ExportModelToRvt(fileName).Result as ObjectResult;
+      var log = rsnController.BatchExportModel(new ExportTask(){Files = new List<string> {fileName}}).Result as ObjectResult;
       Assert.Equal("Имя сервера не определено, либо сервер неизвестен. Файл должен находится на RSN", log.Value);
     }
   }

@@ -5,11 +5,7 @@ namespace Server.Assembler.ModelExportService.Services
 {
   public interface IExportService
   {
-    string ExportModelToNavis(RsnFileInfo file);
-    string BatchExportModelsToNavis(List<RsnFileInfo> files, string outFolder = "");
-    string BatchExportModelToNavisParallel(List<RsnFileInfo> files, bool rsnStructure, string outFolder = "");
-
-    string BatchModelExport(List<RsnFileInfo> files);
-    string RevitModelExport(RsnFileInfo file, string folder = "");
+    string BatchExportModelsToFolder(List<RsnFileInfo> files, bool rsnStructure, string outFolder = "");
+    string BatchParallelExportModelsToNavis(List<RsnFileInfo> files, bool rsnStructure, string outFolder = "");
   }
 }

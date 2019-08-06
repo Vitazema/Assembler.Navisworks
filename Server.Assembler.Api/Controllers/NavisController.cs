@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -20,78 +21,6 @@ namespace Server.Assembler.Api.Controllers
     public NavisController(IExportService navisService)
     {
       this.navisService = navisService;
-    }
-    // Get export job api/export
-    [HttpPost]
-    public ActionResult<string> ExportToNavisworks([FromForm] string filePath)
-    {
-      try
-      {
-        if (!ModelState.IsValid)
-        {
-          return BadRequest(ModelState);
-        }
-
-        var file = new RsnFileInfo(filePath);
-
-        if (file.rsnFilePath == null)
-        {
-          return new BadRequestObjectResult("Путь не может быть прочитан");
-        }
-
-        if (!file.rsnFilePath.IsValidForRsnModelPath())
-        {
-          return BadRequest(ModelState);
-        }
-
-        var result = navisService.ExportModelToNavis(file);
-        return Ok(result);
-      }
-      catch (Exception e)
-      {
-        return BadRequest("Ошибка:\n" + e.Message);
-      }
-    }
-
-    [HttpPost]
-    [Route("batch")]
-    public ActionResult<string> BatchExportToNavisworks(ExportTask task)
-    {
-      try
-      {
-        if (!ModelState.IsValid)
-        {
-          return BadRequest(ModelState);
-        }
-
-        var filePaths = task.Files;
-
-        var result = string.Empty;
-        var rsnFiles = new List<RsnFileInfo>();
-
-        if (filePaths.Count == 0)
-          return BadRequest();
-
-        foreach (var filePath in filePaths)
-        {
-          var file = new RsnFileInfo(filePath);
-
-          if (file.rsnFilePath == null)
-            result += $"\nПуть для файла не может быть обработан: {file}";
-
-          if (!file.rsnFilePath.IsValidForRsnModelPath())
-            result += $"\n Не валидный файл для RSN: {file}";
-
-          rsnFiles.Add(file);
-        }
-
-        return Ok(result + "\n"
-          + navisService.BatchExportModelsToNavis(rsnFiles, task.OutFolder));
-      }
-      catch (Exception e)
-      {
-        return BadRequest("Ошибка:\n" + e.Message);
-      }
     }
 
     [HttpPost]
@@ -127,7 +56,7 @@ namespace Server.Assembler.Api.Controllers
         }
 
         return Ok(result + "\n"
-                         + navisService.BatchExportModelToNavisParallel(
+                         + navisService.BatchParallelExportModelsToNavis(
                            rsnFiles,
                            task.RsnStructure,
                            task.OutFolder));
@@ -138,5 +67,48 @@ namespace Server.Assembler.Api.Controllers
         return BadRequest("!!! Ошибка !!!\n" + e.Message);
       }
     }
+
+
+    //[HttpPost]
+    //[Route("batch")]
+    //public ActionResult<string> BatchExportToNavisworks(ExportTask task)
+    //{
+    //  try
+    //  {
+    //    if (!ModelState.IsValid)
+    //    {
+    //      return BadRequest(ModelState);
+    //    }
+
+    //    var filePaths = task.Files;
+
+    //    var result = string.Empty;
+    //    var rsnFiles = new List<RsnFileInfo>();
+
+    //    if (filePaths.Count == 0)
+    //      return BadRequest();
+
+    //    foreach (var filePath in filePaths)
+    //    {
+    //      var file = new RsnFileInfo(filePath);
+
+    //      if (file.rsnFilePath == null)
+    //        result += $"\nПуть для файла не может быть обработан: {file}";
+
+    //      if (!file.rsnFilePath.IsValidForRsnModelPath())
+    //        result += $"\n Не валидный файл для RSN: {file}";
+
+    //      rsnFiles.Add(file);
+    //    }
+
+    //    return Ok(result + "\n"
+    //      + navisService.BatchExportModelsToFolder(rsnFiles, task.OutFolder));
+    //  }
+    //  catch (Exception e)
+    //  {
+    //    return BadRequest("Ошибка:\n" + e.Message);
+    //  }
+    //}
+
   }
 }

@@ -27,7 +27,7 @@ namespace Server.Lib.RevitServer
       }
     }
 
-    public static readonly string[] possibleRsnProjectFolders = {"prj", "project", "projects"};
+    public static readonly string[] possibleRsnProjectFolders = {"prj", "project", "projects", "prg"};
 
     /// <summary>
     /// Convert any valid file path to equvalent ModelPath.

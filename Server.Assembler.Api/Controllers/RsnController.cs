@@ -22,43 +22,21 @@ namespace Server.Assembler.Api.Controllers
     }
 
     [HttpPost]
-    public ActionResult<string> ExportModelToRvt([FromForm] string filePath)
-    {
-      if (!ModelState.IsValid)
-        return BadRequest(ModelState);
-
-      var result = new List<string>();
-      
-      try
-      {
-        var file = new RsnFileInfo(filePath);
-
-        result.Add(exportService.RevitModelExport(file));
-      }
-      catch (Exception ex)
-      {
-        result.Add(ex.Message);
-      }
-
-      return Ok(string.Join("\n", result));
-    }
-
-    [HttpPost]
     [Route("batch")]
-    public ActionResult<string> BatchExportModel([FromBody] List<string> filePaths)
+    public ActionResult<string> BatchExportModel(ExportTask task)
     {
       if (!ModelState.IsValid)
       {
         return BadRequest(ModelState);
       }
 
-      if (filePaths.Count == 0)
+      if (task.Files.Count == 0)
         return BadRequest();
 
       var result = string.Empty;
       var rsnFiles = new List<RsnFileInfo>();
 
-      foreach (var filePath in filePaths)
+      foreach (var filePath in task.Files)
       {
         var file = new RsnFileInfo(filePath);
         rsnFiles.Add(file);
@@ -70,7 +48,7 @@ namespace Server.Assembler.Api.Controllers
           result += $"\n Не валидный файл для RSN: {file}";
       }
 
-      return Ok(result + "\n" + exportService.BatchExportModelsToNavis(rsnFiles));
+      return Ok(result + "\n" + exportService.BatchExportModelsToFolder(rsnFiles, task.RsnStructure));
     }
   }
 }

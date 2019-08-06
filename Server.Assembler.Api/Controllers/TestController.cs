@@ -18,6 +18,8 @@ namespace Server.Assembler.Api.Controllers
   [ApiController]
   public class TestController : ControllerBase
   {
+    public int quote { get; set; } = 10;
+
     [HttpPost]
     public ActionResult TestAsync([FromBody] string[] requests)
     {
@@ -51,7 +53,7 @@ namespace Server.Assembler.Api.Controllers
       }
 
       var log = navisCommander.BatchExportToNavis(tempConfigFile, 2017, false,
-        "C:\\Users\\malozyomovvv\\Desktop\\выгрузка_тест");
+        Path.Combine(Environment.SpecialFolder.UserProfile + "\\Desktop\\выгрузка_тест"));
 
       Console.WriteLine($"Job {file.fileFullName} ends\nWith result: {log}");
 
