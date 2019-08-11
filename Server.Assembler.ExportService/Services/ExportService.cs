@@ -5,24 +5,29 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Server.Assembler.Domain;
 using Server.Assembler.Domain.Entities;
 
 namespace Server.Assembler.ModelExportService.Services
 {
   public class ExportService : IExportService
   {
-    public int maxThreads { get; set; } = 6;
+    public int maxThreads { get; set; } = 8;
 
-    public const string defaultExportFolder = @"\\picompany.ru\pikp\Dep\IT\_SR_Public\01_BIM\20_Выгрузки\_Tests";
+    public const string defaultExportFolder = @"\\picompany.ru\pikp\Dep\IT\_SR_Public\01_BIM\20_Выгрузки";
 
     private readonly RsnCommander rsnCommander;
 
     private readonly NavisCommander navisCommander;
 
-    public ExportService()
+    public ExportService(IOptions<Perfomance> config)
     {
       rsnCommander = new RsnCommander();
       navisCommander = new NavisCommander();
+
+      maxThreads = config.Value.MaxDegreeOfParallelism;
     }
 
     public string BatchParallelExportModelsToNavis(List<RsnFileInfo> files, bool rsnStructure, string outFolder = defaultExportFolder)
@@ -46,9 +51,9 @@ namespace Server.Assembler.ModelExportService.Services
             sw.WriteLine(file.tempPath);
           }
 
-          var outputDirectory = defaultExportFolder;
+          var outputDirectory = outFolder;
           if (rsnStructure)
-            outputDirectory = Path.Combine(defaultExportFolder, file.projectDirectory);
+            outputDirectory = Path.Combine(outFolder, file.projectDirectory);
           var navisJobOutput =
             navisCommander.BatchExportToNavis(tempConfigFile, file.serverVersion, false, outputDirectory);
           log.Add(navisJobOutput);

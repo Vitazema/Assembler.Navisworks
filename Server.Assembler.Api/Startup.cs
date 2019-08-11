@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Server.Assembler.Domain;
 using Server.Assembler.ModelExportService.Services;
 
 //using Swashbuckle.AspNetCore.Swagger;
@@ -28,8 +29,20 @@ namespace Server.Assembler.Api
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
+
       services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
       services.AddSingleton<IExportService, ExportService>();
+
+      // confifure options
+      services.Configure<Perfomance>(Configuration.GetSection("Perfomance"));
+
+      //not working 
+      //Configuration.Bind("Perfomance", new Perfomance());
+      //services.Configure<Perfomance>(Configuration.GetSection("Perfomance"));
+      //var section = Configuration.GetSection("Perfomance");
+      //services.AddScoped(sp => sp.GetService<IOptionsSnapshot<Perfomance>>().Value);
+
+      // Swagger
       //services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new Info {Title = "Navis API", Version = "v1"}); });
     }
 

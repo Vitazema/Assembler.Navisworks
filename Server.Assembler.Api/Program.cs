@@ -20,6 +20,7 @@ namespace Server.Assembler.Api
 
     public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
         WebHost.CreateDefaultBuilder(args)
+          .ConfigureAppConfiguration((hostingContext, config) => { config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true); })
           .UseKestrel()
           .UseStartup<Startup>();
   }
