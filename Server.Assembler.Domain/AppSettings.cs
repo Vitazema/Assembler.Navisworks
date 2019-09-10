@@ -1,8 +1,16 @@
-﻿namespace Server.Assembler.Domain
-{
-  public class ApplicationSettings
-  {
+﻿using Microsoft.Extensions.Logging;
 
+namespace Server.Assembler.Domain
+{
+  public class Appsettings
+  {
+    public Logging Logging { get; set; }
+    public Perfomance Perfomance { get; set; }
+  }
+
+  public class Logging
+  {
+    public string LogstashServer { get; set; }
   }
 
   public class Perfomance

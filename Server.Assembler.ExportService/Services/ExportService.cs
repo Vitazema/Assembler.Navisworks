@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Server.Assembler.Domain;
 using Server.Assembler.Domain.Entities;
@@ -14,21 +15,25 @@ namespace Server.Assembler.ModelExportService.Services
 {
   public class ExportService : IExportService
   {
+    ILogger logger;
     public int maxThreads { get; set; } = 8;
 
-    public const string defaultExportFolder = @"\\picompany.ru\pikp\Dep\IT\_SR_Public\01_BIM\20_Выгрузки";
-
-    private readonly RsnCommander rsnCommander;
+    public const string defaultExportFolder = @"\\picompany.ru\pikp\NAVIS-EXP\_Экспорт";
 
     private readonly NavisCommander navisCommander;
 
-    public ExportService(IOptions<Perfomance> config)
+    public ExportService(ILogger<ExportService> logger, IOptions<Perfomance> config)
     {
-      rsnCommander = new RsnCommander();
+      this.logger = logger;
       navisCommander = new NavisCommander();
-
       maxThreads = config.Value.MaxDegreeOfParallelism;
     }
+
+    //// TODO: check if can catch configuration in runtime
+    //// when service is called
+    //public ExportService(IOptions<Perfomance> config) : this()
+    //{
+    //}
 
     public string BatchParallelExportModelsToNavis(List<RsnFileInfo> files, bool rsnStructure, string outFolder = defaultExportFolder)
     {
@@ -39,7 +44,7 @@ namespace Server.Assembler.ModelExportService.Services
         try
         {
           var tempConfigFile = Path.GetTempPath() + "temp" + new Random().Next(1000000, 9999999) + ".txt";
-          log.Add(rsnCommander.CreateLocalFile(file));
+          log.Add(RsnCommander.CreateLocalFile(file));
 
           // Check if file successfuly copied from RSN,
           // then start copy to destination
@@ -78,7 +83,7 @@ namespace Server.Assembler.ModelExportService.Services
       {
         foreach (var file in group.Value)
         {
-          var fileLog = rsnCommander.CreateLocalFile(file);
+          var fileLog = RsnCommander.CreateLocalFile(file);
           log.Add(fileLog);
         }
         

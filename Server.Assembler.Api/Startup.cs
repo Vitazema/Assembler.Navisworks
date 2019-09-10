@@ -10,8 +10,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Serilog;
 using Server.Assembler.Domain;
 using Server.Assembler.ModelExportService.Services;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 //using Swashbuckle.AspNetCore.Swagger;
 
@@ -54,10 +56,25 @@ namespace Server.Assembler.Api
         app.UseDeveloperExceptionPage();
       }
 
+      // Make less noise when log HTTP requests,
+      // by combining multiple events into one
+      app.UseSerilogRequestLogging();
+
       //app.UseSwagger();
       //app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Navis API v1"); });
 
       app.UseMvc();
     }
+
+  }
+
+  /// <summary>
+  /// Shared logger
+  /// </summary>
+  public static class AppLogger
+  {
+    internal static ILoggerFactory LoggerFactory { get; set; }
+    internal static ILogger CreateLogger<T>() => LoggerFactory.CreateLogger<T>();
+    internal static ILogger CreateLogger(string categoryName) => LoggerFactory.CreateLogger(categoryName);
   }
 }

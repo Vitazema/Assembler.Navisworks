@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Server.Assembler.Domain.Entities;
 using Server.Assembler.ModelExportService.Services;
@@ -16,10 +17,12 @@ namespace Server.Assembler.Api.Controllers
   [ApiController]
   public class NavisController : ControllerBase
   {
+    private readonly ILogger<NavisController> _logger;
     private readonly IExportService navisService;
 
-    public NavisController(IExportService navisService)
+    public NavisController(ILogger<NavisController> logger, IExportService navisService)
     {
+      _logger = logger;
       this.navisService = navisService;
     }
 
@@ -60,10 +63,10 @@ namespace Server.Assembler.Api.Controllers
                            rsnFiles,
                            task.RsnStructure,
                            task.OutFolder));
-
       }
       catch (Exception e)
       {
+        _logger.LogError(e, "Task execution error {task}", task);
         return BadRequest("!!! Ошибка !!!\n" + e.Message);
       }
     }

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Server.Assembler.Domain.Entities;
 using Server.Assembler.ModelExportService;
 
@@ -18,36 +19,49 @@ namespace Server.Assembler.Api.Controllers
   [ApiController]
   public class TestController : ControllerBase
   {
+    private readonly ILogger<TestController> _logger;
     public int quote { get; set; } = 10;
 
+    public TestController(ILogger<TestController> logger)
+    {
+      _logger = logger;
+    }
     [HttpPost]
     public ActionResult TestAsync([FromBody] string[] requests)
     {
-      var maxThreads = 2;
-      var rsnFileList = requests.Select(r => new RsnFileInfo(r)).ToList();
-      var options = new ParallelOptions() {MaxDegreeOfParallelism = maxThreads};
-      var logger = new List<string>();
-
-      Parallel.ForEach(rsnFileList, options, file =>
+      try
       {
-        var result = JobProcess(file);
-        Console.WriteLine(result);
-        logger.Add(result);
-      });
+        var maxThreads = 2;
+        var rsnFileList = requests.Select(r => new RsnFileInfo(r)).ToList();
+        var options = new ParallelOptions() {MaxDegreeOfParallelism = maxThreads};
+        var logger = new List<string>();
 
-      return Ok(logger);
+        Parallel.ForEach(rsnFileList, options, file =>
+        {
+          //var result = JobProcess(file);
+          //Console.WriteLine(result);
+          //logger.Add(result);
+        });
+        _logger.LogWarning("something can be happened");
+        throw new ArgumentException("wo-po-po-po");
+        return Ok(logger);
+      }
+      catch (Exception ex)
+      {
+        _logger.LogError(ex, "something hapaned");
+        return BadRequest();
+      }
     }
     public static string JobProcess(RsnFileInfo file)
     {
       Console.WriteLine($"Job export {file.fileFullName} starts");
 
-      var rsnCommander = new RsnCommander();
       var navisCommander = new NavisCommander();
       var tempConfigFile = Path.GetTempPath() + "temp" + new Random().Next(10000, 99999) + ".txt";
 
       using (var sw = new StreamWriter(System.IO.File.Create(tempConfigFile)))
       {
-        var res = rsnCommander.CreateLocalFile(file);
+        var res = RsnCommander.CreateLocalFile(file);
         Console.WriteLine($"File copy: {file.fileFullName} result:{res}");
         sw.WriteLine(file.tempPath);
       }
