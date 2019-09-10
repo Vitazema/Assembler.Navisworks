@@ -38,12 +38,6 @@ namespace Server.Assembler.Api
       // confifure options
       services.Configure<Perfomance>(Configuration.GetSection("Perfomance"));
 
-      //not working 
-      //Configuration.Bind("Perfomance", new Perfomance());
-      //services.Configure<Perfomance>(Configuration.GetSection("Perfomance"));
-      //var section = Configuration.GetSection("Perfomance");
-      //services.AddScoped(sp => sp.GetService<IOptionsSnapshot<Perfomance>>().Value);
-
       // Swagger
       //services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new Info {Title = "Navis API", Version = "v1"}); });
     }
@@ -66,15 +60,5 @@ namespace Server.Assembler.Api
       app.UseMvc();
     }
 
-  }
-
-  /// <summary>
-  /// Shared logger
-  /// </summary>
-  public static class AppLogger
-  {
-    internal static ILoggerFactory LoggerFactory { get; set; }
-    internal static ILogger CreateLogger<T>() => LoggerFactory.CreateLogger<T>();
-    internal static ILogger CreateLogger(string categoryName) => LoggerFactory.CreateLogger(categoryName);
   }
 }

@@ -46,7 +46,7 @@ namespace Server.Assembler.Api
           AutoRegisterTemplateVersion = AutoRegisterTemplateVersion.ESv7
         })
         .CreateLogger();
-      Log.Logger.Information("Logging sends to {logServer}", logServer);
+      Log.Logger.Information("Logs are sending to {logServer}", logServer);
 
       // Start host with an application
       try
