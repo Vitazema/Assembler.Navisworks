@@ -16,7 +16,7 @@ namespace Server.Assembler.ModelExportService.Services
   public class ExportService : IExportService
   {
     ILogger logger;
-    public int maxThreads { get; set; } = 8;
+    public int maxThreads { get; set; } = Environment.ProcessorCount;
 
     public const string defaultExportFolder = @"\\picompany.ru\pikp\NAVIS-EXP\_Экспорт";
 
