@@ -26,7 +26,8 @@ namespace Server.Assembler.ModelExportService.Services
     {
       this.logger = logger;
       navisCommander = new NavisCommander();
-      maxThreads = config.Value.MaxDegreeOfParallelism;
+      if (!config.Value.AutoThreads)
+        maxThreads = config.Value.MaxDegreeOfParallelism;
     }
 
     //// TODO: check if can catch configuration in runtime
@@ -49,7 +50,11 @@ namespace Server.Assembler.ModelExportService.Services
           // Check if file successfuly copied from RSN,
           // then start copy to destination
           if (!File.Exists(file.tempPath))
-            throw new Exception("Файл не удалось создать во временной папке");
+          {
+            var ex = new Exception("Файл не удалось создать во временной папке");
+            logger.LogError(ex, ex.Message);
+            throw ex;
+          }
 
           using (var sw = new StreamWriter(File.Create(tempConfigFile), Encoding.UTF8))
           {
@@ -61,10 +66,12 @@ namespace Server.Assembler.ModelExportService.Services
             outputDirectory = Path.Combine(outFolder, file.projectDirectory);
           var navisJobOutput =
             navisCommander.BatchExportToNavis(tempConfigFile, file.serverVersion, false, outputDirectory);
+          logger.LogInformation(navisJobOutput, file);
           log.Add(navisJobOutput);
         }
         catch (Exception e)
         {
+          logger.LogError(e, e.Message);
           log.Add(e.Message);
         }
 

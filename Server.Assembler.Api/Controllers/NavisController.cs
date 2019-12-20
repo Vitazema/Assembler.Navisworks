@@ -58,15 +58,16 @@ namespace Server.Assembler.Api.Controllers
           rsnFiles.Add(file);
         }
 
-        return Ok(result + "\n"
-                         + navisService.BatchParallelExportModelsToNavis(
-                           rsnFiles,
-                           task.RsnStructure,
-                           task.OutFolder));
+        var exportTaskLog = navisService.BatchParallelExportModelsToNavis(
+          rsnFiles,
+          task.RsnStructure,
+          task.OutFolder); 
+        _logger.LogInformation(exportTaskLog);
+        return Ok(result + "\n" + exportTaskLog);
       }
       catch (Exception e)
       {
-        _logger.LogError(e, "Task execution error {task}", task);
+        _logger.LogCritical(e, "Task execution error {task}", task);
         return BadRequest("!!! Ошибка !!!\n" + e.Message);
       }
     }

@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Server.Lib.RevitServer
 {
-    public class RsnServers
-    {
-      public Dictionary<int, List<string>> RsnServerList { get; set; }
-    }
+  public class RsnServers
+  {
+    public Dictionary<int, List<string>> RsnServerList { get; set; }
+  }
 }

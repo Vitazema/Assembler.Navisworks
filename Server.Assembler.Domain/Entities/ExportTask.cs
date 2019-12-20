@@ -27,6 +27,6 @@ namespace Server.Assembler.Domain.Entities
     /// <summary>
     /// Operate given prority in loop quote. Usually division number.
     /// </summary>
-    public bool QuoteMarker { get; set; }
+    public int QuoteMarker { get; set; }
   }
 }
