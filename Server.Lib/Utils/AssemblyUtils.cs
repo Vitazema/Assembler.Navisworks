@@ -9,6 +9,8 @@ namespace Server.Lib.Utils
     public static string GetAssemblyDirectory()
     {
       var codebase = Assembly.GetExecutingAssembly().CodeBase;
+
+      // remove File:// at the beginning
       var uri = new UriBuilder(codebase);
       var path = Uri.UnescapeDataString(uri.Path);
       return Path.GetDirectoryName(path);

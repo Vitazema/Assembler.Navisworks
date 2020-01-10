@@ -1,24 +1,43 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
 using Newtonsoft.Json;
+using Server.Lib.Ex;
 using Server.Lib.Extensions;
+using Server.Lib.Utils;
 
 namespace Server.Lib.RevitServer
 {
   public static class RsnHelper
   {
-    public static readonly string[] possibleRsnProjectFolders = {"prj", "project", "projects", "prg"};
+    public static readonly string[] possibleRsnProjectFolders = { "prj", "project", "projects", "prg" };
 
-    public static Dictionary<int, List<string>> rsnServerList
+    public static Dictionary<int, List<string>> rsnServerListFromConfigFile()
     {
-      get
+      var jsonPath = AssemblyUtils.GetAssemblyDirectory() + "\\RsnServers.json";
+      if (!File.Exists(jsonPath))
+        return null;
+      using (var sr = new StreamReader(jsonPath))
       {
-        using (var sr = new StreamReader(ExecutionUtils.GetAssemblyDirectory()
-                                         + "\\RsnServers.json"))
+        var json = sr.ReadToEnd();
+        return JsonConvert.DeserializeObject<RsnServers>(json).RsnServerList;
+      }
+    }
+
+    public static Dictionary<int, List<string>> rsnServerListFromResources(string resourceName)
+    {
+      var assembly = Assembly.GetExecutingAssembly();
+      var asll = assembly.GetManifestResourceNames();
+      var embeddedResourcePathName = $"{assembly.GetName().Name}.{resourceName}";
+      using (Stream resourceStream = assembly.GetManifestResourceStream(embeddedResourcePathName))
+      {
+        if (resourceStream == null)
+          return null;
+        using (var sr = new StreamReader(resourceStream))
         {
           var json = sr.ReadToEnd();
           return JsonConvert.DeserializeObject<RsnServers>(json).RsnServerList;
@@ -27,7 +46,7 @@ namespace Server.Lib.RevitServer
     }
 
     /// <summary>
-    ///   Convert any valid file path to equvalent ModelPath.
+    ///   Convert any valid file directory to equvalent ModelPath.
     ///   Path must have 4 digital project tag at the beginning.
     /// </summary>
     /// <param name="path"></param>
@@ -40,7 +59,7 @@ namespace Server.Lib.RevitServer
     public static string ExtractServerNameWithoutDomain(this string path)
     {
       // todo: check possible overtype json query error with \\ or \
-      var splittedPath = path.Split(new[] {'\\'}, StringSplitOptions.RemoveEmptyEntries);
+      var splittedPath = path.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
 
       if (splittedPath[0] == "RSN:") splittedPath = splittedPath.Skip(1).ToArray();
 
@@ -52,12 +71,14 @@ namespace Server.Lib.RevitServer
     public static string ExtractProjectFilePath(this string path)
     {
       var splittedPath = path
-        .Split(new[] {'\\'}, StringSplitOptions.RemoveEmptyEntries);
+        .Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
 
-
+      var rsnServers = rsnServerListFromConfigFile()??rsnServerListFromResources("RsnServers.json");
+      if (rsnServers == null)
+        throw new Exception("Cannot find Revit server config file");
       var projectSiteIndex = splittedPath.ToList().FindLastIndex(p =>
         p.ToLower()
-          .ContainsAny(possibleRsnProjectFolders.Concat(rsnServerList.SelectMany(s => s.Value)).ToArray()));
+          .ContainsAny(possibleRsnProjectFolders.Concat(rsnServers.SelectMany(s => s.Value)).ToArray()));
 
       return string.Join("\\", splittedPath.Skip(projectSiteIndex + 1));
     }
@@ -67,27 +88,27 @@ namespace Server.Lib.RevitServer
       var compiledOrProjectFolders = string.Join("|", possibleRsnProjectFolders);
       return Regex.IsMatch(path, $@"(?!(.*\\({compiledOrProjectFolders}|$)\\.*))^RSN:\\\\.*\.rvt$",
                RegexOptions.IgnoreCase) &&
-             path.ContainsAny(rsnServerList.SelectMany(s => s.Value).ToArray());
+             path.ContainsAny(rsnServerListFromConfigFile().SelectMany(s => s.Value).ToArray());
     }
 
-    public static List<ModelPath> GetModelsByFolderPath(DirectoryInfo path)
+    public static List<ModelPath> GetModelsByFolder(DirectoryInfo directory)
     {
       var modelPaths = new List<ModelPath>();
 
       // Be cautious when add english letters standalone
-      var excludeFolders = new[]
-      {
-        "ДДУ",
-        "РМП",
-        "восстановление",
-        "старый",
-        "архив",
-        "lib"
-      };
-      var pattern = $"({string.Join("|", excludeFolders)})";
+      //var excludeFolders = new[]
+      //{
+      //  "ДДУ",
+      //  "РМП",
+      //  "восстановление",
+      //  "старый",
+      //  "архив",
+      //  "lib"
+      //};
+      //var pattern = $"({string.Join("|", excludeFolders)})";
       // change to .contains() with lowering
-      var revitFiles = GetFolderDirectories(path, 2)
-        .Where(d => !Regex.IsMatch(d.FullName, pattern, RegexOptions.IgnoreCase))
+      var revitFiles = GetFolderDirectories(directory, 2)
+        //.Where(d => !Regex.IsMatch(d.FullName, pattern, RegexOptions.IgnoreCase))
         .ToList();
       if (revitFiles.Count != 0)
       {
@@ -108,6 +129,21 @@ namespace Server.Lib.RevitServer
       return modelPaths;
     }
 
+    public static List<string> GetModelPathsByFolder(DirectoryInfo directory)
+    {
+      var fileOutput = new List<string>();
+      var revitFiles = GetFolderDirectories(directory, 2).ToList();
+      if (revitFiles.Count != 0)
+      {
+        revitFiles.RemoveAt(0);
+        foreach (var filePathInfo in revitFiles)
+        {
+          fileOutput.Add(filePathInfo.FullName);
+        }
+      }
+      return fileOutput;
+    }
+
     public static IEnumerable<DirectoryInfo> GetFolderDirectories(DirectoryInfo rootDir, int depth = 0)
     {
       yield return rootDir;
@@ -115,10 +151,47 @@ namespace Server.Lib.RevitServer
       {
         if (rootDir.Name.EndsWith(".rvt")) yield break;
         foreach (var dir in rootDir.EnumerateDirectories())
-        foreach (var subDir in GetFolderDirectories(dir, depth - 1))
-          if (subDir.Name.EndsWith(".rvt"))
-            yield return subDir;
+          foreach (var subDir in GetFolderDirectories(dir, depth - 1))
+            if (subDir.Name.EndsWith(".rvt"))
+              yield return subDir;
       }
+    }
+    public static string ConvertNetworkToRsnPath_Old(this string path)
+    {
+      if (path.CanBeParsedToRsnPath())
+      {
+        var splittedPath = path.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
+
+        if (splittedPath[0] == "RSN:")
+        {
+          splittedPath = splittedPath.Skip(1).ToArray();
+        }
+
+        var server = splittedPath[0];
+        server = server.Replace(".main.picompany.ru", "");
+
+        int projectSiteIndex = splittedPath.ToList().FindIndex(p => Regex.IsMatch(p, @"^\d\d\d\d"));
+
+        var projectPath = splittedPath.Skip(projectSiteIndex).ToList();
+
+        var modelFullName = projectPath.Last();
+
+        projectPath.RemoveAt(projectPath.Count() - 1);
+
+        var compiledPath = "RSN:\\\\" + server + "\\" + string.Join("\\", projectPath.ToList()) + "\\" + modelFullName;
+
+        if (compiledPath.IsValidPathForRsn())
+          return compiledPath;
+        else
+        {
+          throw new ArgumentException("Путь не пригоден для создания ссылки на модель RSN");
+        }
+      }
+      else
+      {
+        return null;
+      }
+
     }
   }
 }
