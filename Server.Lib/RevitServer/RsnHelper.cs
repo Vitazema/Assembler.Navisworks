@@ -28,7 +28,7 @@ namespace Server.Lib.RevitServer
       }
     }
 
-    public static Dictionary<int, List<string>> rsnServerListFromResources(string resourceName)
+    public static Dictionary<int, List<string>> RsnServerListFromResources(string resourceName)
     {
       var assembly = Assembly.GetExecutingAssembly();
       var asll = assembly.GetManifestResourceNames();
@@ -73,7 +73,7 @@ namespace Server.Lib.RevitServer
       var splittedPath = path
         .Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
 
-      var rsnServers = rsnServerListFromConfigFile()??rsnServerListFromResources("RsnServers.json");
+      var rsnServers = rsnServerListFromConfigFile()??RsnServerListFromResources("RsnServers.json");
       if (rsnServers == null)
         throw new Exception("Cannot find Revit server config file");
       var projectSiteIndex = splittedPath.ToList().FindLastIndex(p =>

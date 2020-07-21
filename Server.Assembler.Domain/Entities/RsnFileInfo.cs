@@ -44,7 +44,7 @@ namespace Server.Assembler.Domain.Entities
 
       rawFilePath = path;
 
-      foreach (KeyValuePair<int, List<string>> keyValuePair in RsnHelper.rsnServerList)
+      foreach (KeyValuePair<int, List<string>> keyValuePair in RsnHelper.rsnServerListFromConfigFile())
       {
         if (keyValuePair.Value.Contains(serverName))
         {
