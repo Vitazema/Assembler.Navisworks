@@ -21,10 +21,12 @@ namespace Server.Assembler.Api.Controllers
   {
     private readonly ILogger<TestController> _logger;
     public int quote { get; set; } = 10;
+    public RsnCommander rsnCommander { get; set; }
 
     public TestController(ILogger<TestController> logger)
     {
       _logger = logger;
+      rsnCommander = new RsnCommander(_logger);
     }
     [HttpPost]
     public ActionResult TestAsync([FromBody] string[] requests)
@@ -52,7 +54,7 @@ namespace Server.Assembler.Api.Controllers
         return BadRequest();
       }
     }
-    public static string JobProcess(RsnFileInfo file)
+    public string JobProcess(RsnFileInfo file)
     {
       Console.WriteLine($"Job export {file.fileFullName} starts");
 
@@ -61,7 +63,7 @@ namespace Server.Assembler.Api.Controllers
 
       using (var sw = new StreamWriter(System.IO.File.Create(tempConfigFile)))
       {
-        var res = RsnCommander.CreateLocalFile(file);
+        var res = rsnCommander.CreateLocalFile(file);
         Console.WriteLine($"File copy: {file.fileFullName} result:{res}");
         sw.WriteLine(file.tempPath);
       }

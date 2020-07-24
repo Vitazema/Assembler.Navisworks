@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Server.Assembler.Domain;
 using Server.Assembler.Domain.Entities;
+using Server.Lib.Documents;
 
 namespace Server.Assembler.ModelExportService.Services
 {
@@ -21,6 +22,7 @@ namespace Server.Assembler.ModelExportService.Services
     public const string defaultExportFolder = @"\\picompany.ru\pikp\NAVIS-EXP\_Экспорт";
 
     private readonly NavisCommander navisCommander;
+    private readonly RsnCommander rsnCommander;
 
     public ExportService(ILogger<ExportService> logger, IOptions<Perfomance> config)
     {
@@ -45,7 +47,7 @@ namespace Server.Assembler.ModelExportService.Services
         try
         {
           var tempConfigFile = Path.GetTempPath() + "temp" + new Random().Next(1000000, 9999999) + ".txt";
-          log.Add(RsnCommander.CreateLocalFile(file));
+          log.Add(rsnCommander.CreateLocalFile(file));
 
           // Check if file successfuly copied from RSN,
           // then start copy to destination
@@ -74,9 +76,47 @@ namespace Server.Assembler.ModelExportService.Services
           logger.LogError(e, e.Message);
           log.Add(e.Message);
         }
-
       });
 
+      return string.Join("\n", log);
+    }
+    public string BatchParralelExportModelsTolFolder(List<RsnFileInfo> files, bool rsnStructure, string outFolder = defaultExportFolder)
+    {
+      var options = new ParallelOptions() { MaxDegreeOfParallelism = maxThreads };
+      // export logs to parallel dump
+      var log = new ConcurrentBag<string>();
+      Parallel.ForEach(files, options, file =>
+      {
+        try
+        {
+          var rsnTempFile = Path.GetTempPath() + "temp" + Guid.NewGuid() + ".txt";
+
+          // Check if file successfuly copied from RSN,
+          // then start copy to destination
+          if (!File.Exists(file.tempPath))
+          {
+            var ex = new Exception("Файл не удалось создать во временной папке");
+            logger.LogError(ex, ex.Message);
+            throw ex;
+          }
+
+          using (var sw = new StreamWriter(File.Create(rsnTempFile), Encoding.UTF8))
+          {
+            sw.WriteLine(file.tempPath);
+          }
+
+          var outputDirectory = outFolder;
+          if (rsnStructure)
+            outputDirectory = Path.Combine(outFolder, file.projectDirectory);
+          var rsnFileExportLog = rsnCommander.CreateLocalFile(file);
+
+        }
+        catch (Exception e)
+        {
+          logger.LogError(e, e.Message);
+          log.Add(e.Message);
+        }
+      });
       return string.Join("\n", log);
     }
 
@@ -90,7 +130,7 @@ namespace Server.Assembler.ModelExportService.Services
       {
         foreach (var file in group.Value)
         {
-          var fileLog = RsnCommander.CreateLocalFile(file);
+          var fileLog = rsnCommander.CreateLocalFile(file);
           log.Add(fileLog);
         }
         

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
@@ -15,7 +16,7 @@ namespace Server.Assembler.ModelExportService
     {
       _logger = logger;
     }
-    public static string CreateLocalFile(RsnFileInfo file)
+    public string CreateLocalFile(RsnFileInfo file)
     {
       try
       {
@@ -25,11 +26,11 @@ namespace Server.Assembler.ModelExportService
         if (!Directory.Exists(file.rawFilePath))
           throw new ArgumentException("File doesn't exists in RSN");
 
-        var loader = $@"C:\Program Files\Autodesk\Revit {file.serverVersion.ToString()}\RevitServerToolCommand\RevitServerTool.exe";
+        var loader = $@"C:\Program Files\Autodesk\Revit {file.serverVersion}\RevitServerToolCommand\RevitServerTool.exe";
 
         if(!File.Exists(loader))
           throw new Exception("Ревит не установлен на текущей машине, либо по пути невозможно определить имя сервера или версию файла\n" +
-                              $"{loader} - не существует");;       
+                              $"{loader} - не существует");       
 
         var loaderArgs = "createLocalRvt " +
                          "\"" + file.projectFileFullPathWithoutServername + "\"" +
@@ -54,14 +55,18 @@ namespace Server.Assembler.ModelExportService
           .Skip(2)
           .ToArray();
 
+        // Fix ouput formatting
         if (output.Length > 0)
           return string.Join("\n", output);
 
+        // Validate file creation
+        if (!File.Exists(file.tempPath))
+        {
+          throw new Exception($"Не удалось создать файл по пути: {file.tempPath}\nОшибка: {output}");
+        }       
+
         return process.StandardOutput.ReadToEnd() + "\n" +
                process.StandardError.ReadToEnd();
-
-        // Validate file creation
-        //if (!File.Exists())
       }
       catch (Exception e)
       {
