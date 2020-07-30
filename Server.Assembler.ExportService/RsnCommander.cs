@@ -24,19 +24,24 @@ namespace Server.Assembler.ModelExportService
         // TODO: long callback if file doesn't exist on filepath
 
         if (!Directory.Exists(file.rawFilePath))
-          throw new ArgumentException("File doesn't exists in RSN");
+          throw new ArgumentException("Файл .rvt не найден на RSN");
 
-        var loader = $@"C:\Program Files\Autodesk\Revit {file.serverVersion}\RevitServerToolCommand\RevitServerTool.exe";
+        // TODO: inject loader .exe to this solution
+        var loader = $@"C:\Program Files\Autodesk\Revit 2019\RevitServerToolCommand\RevitServerTool.exe";
 
         if(!File.Exists(loader))
           throw new Exception("Ревит не установлен на текущей машине, либо по пути невозможно определить имя сервера или версию файла\n" +
                               $"{loader} - не существует");       
 
-        var loaderArgs = "createLocalRvt " +
-                         "\"" + file.projectFileFullPathWithoutServername + "\"" +
-                         " -destination " +
-                         "\"" + file.tempPath + "\"" +
-                         $" -s {file.serverName} -o";
+        //var loaderArgs = "l " +
+        //                 "\"" + file.projectFileFullPathWithoutServername + "\"" +
+        //                 " -d " +
+        //                 "\"" + file.outPath + "\"" +
+        //                 $" -s {file.serverName} -o";
+        var loaderArgs = $"l \"{file.projectFileFullPathWithoutServername}\" " +
+          $"-d \"{file.outPath}\" " +
+          $"-s \"{file.serverName}\" " +
+          "-o";
 
         // Configuration and start copy process
         var processInfo = new ProcessStartInfo(loader, loaderArgs)
@@ -60,9 +65,9 @@ namespace Server.Assembler.ModelExportService
           return string.Join("\n", output);
 
         // Validate file creation
-        if (!File.Exists(file.tempPath))
+        if (!File.Exists(file.outPath))
         {
-          throw new Exception($"Не удалось создать файл по пути: {file.tempPath}\nОшибка: {output}");
+          throw new Exception($"Не удалось создать файл по пути: {file.outPath}\nОшибка: {output}");
         }       
 
         return process.StandardOutput.ReadToEnd() + "\n" +

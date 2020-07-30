@@ -16,20 +16,23 @@ namespace Server.Assembler.ModelExportService.Services
 {
   public class ExportService : IExportService
   {
-    ILogger logger;
-    public int maxThreads { get; set; } = Environment.ProcessorCount;
-
-    public const string defaultExportFolder = @"\\picompany.ru\pikp\NAVIS-EXP\_Экспорт";
-
+    private readonly ILogger _logger;
     private readonly NavisCommander navisCommander;
     private readonly RsnCommander rsnCommander;
 
+    public int maxThreads { get; set; } = Environment.ProcessorCount;
+
+    public const string defaultNavisExportFolder = @"\\picompany.ru\pikp\NAVIS-EXP\_Экспорт";
+    public string defaultRsnExportFolder;
+
     public ExportService(ILogger<ExportService> logger, IOptions<Perfomance> config)
     {
-      this.logger = logger;
+      _logger = logger;
       navisCommander = new NavisCommander();
+      rsnCommander = new RsnCommander(logger);
       if (!config.Value.AutoThreads)
         maxThreads = config.Value.MaxDegreeOfParallelism;
+      defaultRsnExportFolder = Path.Combine(Path.GetTempPath(), "RsnExport");
     }
 
     //// TODO: check if can catch configuration in runtime
@@ -38,9 +41,9 @@ namespace Server.Assembler.ModelExportService.Services
     //{
     //}
 
-    public string BatchParallelExportModelsToNavis(List<RsnFileInfo> files, bool rsnStructure, string outFolder = defaultExportFolder)
+    public string BatchParallelExportModelsToNavis(List<RsnFileInfo> files, bool rsnStructure, string outFolder = defaultNavisExportFolder)
     {
-      var options = new ParallelOptions() {MaxDegreeOfParallelism = maxThreads};
+      var options = new ParallelOptions() { MaxDegreeOfParallelism = maxThreads };
       var log = new ConcurrentBag<string>();
       Parallel.ForEach(files, options, file =>
       {
@@ -51,16 +54,16 @@ namespace Server.Assembler.ModelExportService.Services
 
           // Check if file successfuly copied from RSN,
           // then start copy to destination
-          if (!File.Exists(file.tempPath))
+          if (!File.Exists(file.outPath))
           {
             var ex = new Exception("Файл не удалось создать во временной папке");
-            logger.LogError(ex, ex.Message);
+            _logger.LogError(ex, ex.Message);
             throw ex;
           }
 
           using (var sw = new StreamWriter(File.Create(tempConfigFile), Encoding.UTF8))
           {
-            sw.WriteLine(file.tempPath);
+            sw.WriteLine(file.outPath);
           }
 
           var outputDirectory = outFolder;
@@ -68,72 +71,61 @@ namespace Server.Assembler.ModelExportService.Services
             outputDirectory = Path.Combine(outFolder, file.projectDirectory);
           var navisJobOutput =
             navisCommander.BatchExportToNavis(tempConfigFile, file.serverVersion, false, outputDirectory);
-          logger.LogInformation(navisJobOutput, file);
+          _logger.LogInformation(navisJobOutput, file);
           log.Add(navisJobOutput);
         }
         catch (Exception e)
         {
-          logger.LogError(e, e.Message);
+          _logger.LogError(e, e.Message);
           log.Add(e.Message);
         }
       });
 
       return string.Join("\n", log);
     }
-    public string BatchParralelExportModelsTolFolder(List<RsnFileInfo> files, bool rsnStructure, string outFolder = defaultExportFolder)
+    public string ParralelExportModels(ExportTask task)
     {
       var options = new ParallelOptions() { MaxDegreeOfParallelism = maxThreads };
       // export logs to parallel dump
       var log = new ConcurrentBag<string>();
-      Parallel.ForEach(files, options, file =>
+      Parallel.ForEach(task.Files, options, rawRsnFilePath =>
       {
         try
         {
-          var rsnTempFile = Path.GetTempPath() + "temp" + Guid.NewGuid() + ".txt";
+          var fileInfo = new RsnFileInfo(rawRsnFilePath, task.RsnStructure, task.OutFolder);
 
-          // Check if file successfuly copied from RSN,
-          // then start copy to destination
-          if (!File.Exists(file.tempPath))
-          {
-            var ex = new Exception("Файл не удалось создать во временной папке");
-            logger.LogError(ex, ex.Message);
-            throw ex;
-          }
-
-          using (var sw = new StreamWriter(File.Create(rsnTempFile), Encoding.UTF8))
-          {
-            sw.WriteLine(file.tempPath);
-          }
-
-          var outputDirectory = outFolder;
-          if (rsnStructure)
-            outputDirectory = Path.Combine(outFolder, file.projectDirectory);
-          var rsnFileExportLog = rsnCommander.CreateLocalFile(file);
-
+          log.Add(rsnCommander.CreateLocalFile(fileInfo));
         }
         catch (Exception e)
         {
-          logger.LogError(e, e.Message);
+          _logger.LogError(e, e.Message);
           log.Add(e.Message);
         }
       });
       return string.Join("\n", log);
     }
 
-    public string BatchExportModelsToFolder(List<RsnFileInfo> files, bool rsnStructure, string outFolder = defaultExportFolder)
+    public string BatchExportModels(List<RsnFileInfo> files, bool rsnStructure)
     {
+      
       var log = new List<string>();
-
-      var exportModels = files.GroupBy(x => x.serverVersion).ToDictionary(g => g.Key, g => g.ToList());
-
-      foreach (KeyValuePair<int, List<RsnFileInfo>> group in exportModels)
+      try
       {
-        foreach (var file in group.Value)
+        var exportModels = files.GroupBy(x => x.serverVersion).ToDictionary(g => g.Key, g => g.ToList());
+
+        foreach (KeyValuePair<int, List<RsnFileInfo>> group in exportModels)
         {
-          var fileLog = rsnCommander.CreateLocalFile(file);
-          log.Add(fileLog);
+          foreach (var file in group.Value)
+          {
+            var fileLog = rsnCommander.CreateLocalFile(file);
+            log.Add(fileLog);
+          }
         }
-        
+      }
+      catch (Exception e)
+      {
+        _logger.LogError(e, e.Message);
+        log.Add(e.Message);
       }
       return string.Join("\n", log);
     }

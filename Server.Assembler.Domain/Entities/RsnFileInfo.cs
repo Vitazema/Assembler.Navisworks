@@ -35,9 +35,9 @@ namespace Server.Assembler.Domain.Entities
     /// <summary>
     /// Temporary server place for copied file from RSN (local user temp folder)
     /// </summary>
-    public string tempPath { get; set; }
+    public string outPath { get; set; }
 
-    public RsnFileInfo(string path)
+    public RsnFileInfo(string path, bool rsnStructure, string outFolder)
     {
       if (path.Length == 0)
         throw new Exception("Необходимо имя файла");
@@ -53,16 +53,29 @@ namespace Server.Assembler.Domain.Entities
         }
       }
 
+      //foreach (KeyValuePair<int, List<string>> rsnServerList in RsnHelper.RsnServerListFromResources("RsnServers.json"))
+      //{
+      //  rsn
+      //}
+      //Regex.IsMatch(RsnHelper.rsn)
       if (serverVersion == 0)
       { 
         throw new ArgumentException("Имя сервера не определено, либо сервер неизвестен. Файл должен находиться на RSN");
       }
 
       fileFullName = Path.GetFileName(rawFilePath);
-      
-      tempPath = Path.Combine(Path.GetTempPath() + $"{serverName}\\{projectFileFullPathWithoutServername}");
-
       projectDirectory = Path.GetDirectoryName(projectFileFullPathWithoutServername);
+
+      if (outFolder != null)
+      {
+        outPath = Path.Combine(outFolder, rsnStructure ? projectFileFullPathWithoutServername : fileFullName);
+      }
+      else
+      {
+        outPath = Path.Combine(Path.GetTempPath(),
+          serverName,
+          rsnStructure ? projectFileFullPathWithoutServername : fileFullName);
+      }
     }
   }
 }

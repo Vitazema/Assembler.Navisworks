@@ -34,7 +34,7 @@ namespace Server.Assembler.Api.Controllers
       try
       {
         var maxThreads = 2;
-        var rsnFileList = requests.Select(r => new RsnFileInfo(r)).ToList();
+        var rsnFileList = requests.Select(r => new RsnFileInfo(r, false, null)).ToList();
         var options = new ParallelOptions() {MaxDegreeOfParallelism = maxThreads};
         var logger = new List<string>();
 
@@ -65,7 +65,7 @@ namespace Server.Assembler.Api.Controllers
       {
         var res = rsnCommander.CreateLocalFile(file);
         Console.WriteLine($"File copy: {file.fileFullName} result:{res}");
-        sw.WriteLine(file.tempPath);
+        sw.WriteLine(file.outPath);
       }
 
       var log = navisCommander.BatchExportToNavis(tempConfigFile, 2017, false,

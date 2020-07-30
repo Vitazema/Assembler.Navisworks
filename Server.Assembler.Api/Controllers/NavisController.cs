@@ -47,7 +47,7 @@ namespace Server.Assembler.Api.Controllers
 
         foreach (var filePath in filePaths)
         {
-          var file = new RsnFileInfo(filePath);
+          var file = new RsnFileInfo(filePath, task.RsnStructure, task.OutFolder);
 
           if (file.rsnFilePath == null)
             result += $"\nПуть для файла не может быть обработан: {file}";
@@ -60,8 +60,7 @@ namespace Server.Assembler.Api.Controllers
 
         var exportTaskLog = navisService.BatchParallelExportModelsToNavis(
           rsnFiles,
-          task.RsnStructure,
-          task.OutFolder); 
+          task.RsnStructure); 
         _logger.LogInformation(exportTaskLog);
         return Ok(result + "\n" + exportTaskLog);
       }
@@ -71,7 +70,6 @@ namespace Server.Assembler.Api.Controllers
         return BadRequest("!!! Ошибка !!!\n" + e.Message);
       }
     }
-
 
     //[HttpPost]
     //[Route("batch")]
@@ -106,13 +104,12 @@ namespace Server.Assembler.Api.Controllers
     //    }
 
     //    return Ok(result + "\n"
-    //      + navisService.BatchExportModelsToFolder(rsnFiles, task.OutFolder));
+    //      + navisService.BatchExportModels(rsnFiles, task.OutFolder));
     //  }
     //  catch (Exception e)
     //  {
     //    return BadRequest("Ошибка:\n" + e.Message);
     //  }
     //}
-
   }
 }

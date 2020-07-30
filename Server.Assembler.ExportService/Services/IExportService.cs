@@ -5,7 +5,8 @@ namespace Server.Assembler.ModelExportService.Services
 {
   public interface IExportService
   {
-    string BatchExportModelsToFolder(List<RsnFileInfo> files, bool rsnStructure, string outFolder = "");
+    string BatchExportModels(List<RsnFileInfo> files, bool rsnStructure);
     string BatchParallelExportModelsToNavis(List<RsnFileInfo> files, bool rsnStructure, string outFolder = "");
+    string ParralelExportModels(ExportTask task);
   }
 }

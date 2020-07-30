@@ -57,7 +57,8 @@ namespace Server.Assembler.Api
 
       //app.UseSwagger();
       //app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Navis API v1"); });
-
+      app.UseDefaultFiles();
+      app.UseStaticFiles();
       app.UseEndpoints(endpoints =>
       {
         //endpoints.MapHealthChecks("/health");

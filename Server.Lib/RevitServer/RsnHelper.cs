@@ -45,6 +45,8 @@ namespace Server.Lib.RevitServer
       }
     }
 
+    //public static int GetRsnFileVersion
+
     /// <summary>
     ///   Convert any valid file directory to equvalent ModelPath.
     ///   Path must have 4 digital project tag at the beginning.
@@ -59,13 +61,20 @@ namespace Server.Lib.RevitServer
     public static string ExtractServerNameWithoutDomain(this string path)
     {
       // todo: check possible overtype json query error with \\ or \
-      var splittedPath = path.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
+      var splittedPath = path.ToLower().Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
 
       if (splittedPath[0] == "RSN:") splittedPath = splittedPath.Skip(1).ToArray();
 
-      if (splittedPath[0].Contains('.')) return splittedPath[0].ToLower().Split('.').FirstOrDefault();
+      var serverName = splittedPath.FirstOrDefault();
 
-      return splittedPath.FirstOrDefault();
+      // check if server contains domain name
+      var domainName = Regex.Match(serverName, @"\.[a-zA-Z]+");
+      if (domainName.Success){
+        //splittedPath[0].Contains('.'))
+        serverName = serverName.Substring(0, serverName.LastIndexOf(domainName.Value));
+      }
+
+      return serverName;
     }
 
     public static string ExtractProjectFilePath(this string path)

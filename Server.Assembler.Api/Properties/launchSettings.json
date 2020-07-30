@@ -21,9 +21,12 @@
       "commandName": "Project",
       "launchUrl": "/api/values",
       "environmentVariables": {
+        "FORGE_CALLBACK_URL": "http://localhost:3000/api/forge/callback/oauth",
+        "FORGE_CLIENT_SECRET": "ETEurtEF51r6koef",
+        "FORGE_CLIENT_ID": "p5RwCk2VQW9H6WPn3SPs7kAvdV8ssPJ4",
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:5001"
+      "applicationUrl": "http://localhost:3000"
     }
   }
 }

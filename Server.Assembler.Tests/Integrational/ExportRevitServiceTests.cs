@@ -21,7 +21,7 @@ namespace Server.Assembler.Tests.Integrational
       var folderPath = @"\\picompany.ru\pikp\Dep\IT\_SR_Public\01_BIM\10_Development\Assembler tests";
 
       var fileInfo = new RsnFileInfo(fileName);
-      var log = exportService.BatchExportModelsToFolder(new List<RsnFileInfo>(){fileInfo}, false,folderPath);
+      var log = exportService.BatchExportModels(new List<RsnFileInfo>(){fileInfo}, false,folderPath);
       var file = Path.Combine(folderPath, "Координация", fileInfo.fileFullName);
       Assert.True(File.Exists(file));
       File.Delete(file);
