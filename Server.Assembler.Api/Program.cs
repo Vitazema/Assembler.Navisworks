@@ -47,10 +47,8 @@ namespace Server.Assembler.Api
       try
       {
         Log.Logger.Information("Startig host...");
-        using (var webHost = BuildWebHost(args, configuration).Build())
-        {
-          webHost.Run();
-        }
+        using var webHost = BuildWebHost(args, configuration).Build();
+        webHost.Run();
         return 0;
       }
       catch (Exception ex)

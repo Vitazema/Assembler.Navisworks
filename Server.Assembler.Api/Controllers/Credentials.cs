@@ -96,8 +96,8 @@ namespace Server.Assembler.Api.Controllers
         credentialInternal.refresh_token,
         new Scope[] { Scope.ViewablesRead });
 
-      TokenInternal = credentialInternal.acces_token;
-      TokenPublic = credentialPublic.acces_token;
+      TokenInternal = credentialInternal.access_token;
+      TokenPublic = credentialPublic.access_token;
       RefreshToken = credentialPublic.refresh_token;
       ExpiresAt = DateTime.Now.AddSeconds(credentialInternal.expires_in);
     }

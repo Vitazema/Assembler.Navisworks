@@ -32,7 +32,9 @@ namespace Server.Assembler.Api
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
-      services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+      services.AddMvc(options => options.EnableEndpointRouting = false)
+        .SetCompatibilityVersion(CompatibilityVersion.Version_3_0)
+        .AddNewtonsoftJson();
       services.AddSingleton<IExportService, ExportService>();
 
       // confifure options
@@ -59,11 +61,13 @@ namespace Server.Assembler.Api
       //app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Navis API v1"); });
       app.UseDefaultFiles();
       app.UseStaticFiles();
-      app.UseEndpoints(endpoints =>
-      {
-        //endpoints.MapHealthChecks("/health");
-        endpoints.MapDefaultControllerRoute();
-      });
+      app.UseHttpsRedirection();
+      app.UseMvc();
+      //app.UseEndpoints(endpoints =>
+      //{
+      //  //endpoints.MapHealthChecks("/health");
+      //  endpoints.MapDefaultControllerRoute();
+      //});
 
     }
   }
