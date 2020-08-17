@@ -40,7 +40,7 @@ namespace Server.Assembler.ModelExportService
         //                 $" -s {file.serverName} -o";
         var loaderArgs = $"l \"{file.projectFileFullPathWithoutServername}\" " +
           $"-d \"{file.outPath}\" " +
-          $"-s \"{file.serverName}\" " +
+          $"-s {file.serverName} " +
           "-o";
 
         // Configuration and start copy process
