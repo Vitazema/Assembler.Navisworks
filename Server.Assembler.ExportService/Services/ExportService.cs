@@ -37,41 +37,35 @@ namespace Server.Assembler.ModelExportService.Services
 
     //// TODO: check if can catch configuration in runtime
     //// when service is called
-    //public ExportService(IOptions<Perfomance> config) : this()
+    //public ExportService(IOptions<Performance> config) : this()
     //{
     //}
 
-    public string BatchParallelExportModelsToNavis(List<RsnFileInfo> files, bool rsnStructure, string outFolder = defaultNavisExportFolder)
+    public string ParallelExportModelsToNavis(ExportTask task) //List<RsnFileInfo> files, bool rsnStructure, string outFolder = defaultNavisExportFolder)
     {
       var options = new ParallelOptions() { MaxDegreeOfParallelism = maxThreads };
       var log = new ConcurrentBag<string>();
-      Parallel.ForEach(files, options, file =>
+      Parallel.ForEach(task.Files, options, rawRsnFilePath =>
       {
         try
         {
-          var tempConfigFile = Path.GetTempPath() + "temp" + new Random().Next(1000000, 9999999) + ".txt";
-          log.Add(rsnCommander.CreateLocalFile(file));
+          var fileInfo = new RsnFileInfo(rawRsnFilePath, task.RsnStructure, task.OutFolder);
 
-          // Check if file successfuly copied from RSN,
-          // then start copy to destination
-          if (!File.Exists(file.outPath))
-          {
-            var ex = new Exception("Файл не удалось создать во временной папке");
-            _logger.LogError(ex, ex.Message);
-            throw ex;
-          }
+          var tempConfigFile = Path.GetTempPath() + "temp" + new Random().Next(1000000, 9999999) + ".txt";
+          log.Add(rsnCommander.CreateLocalFile(fileInfo));
 
           using (var sw = new StreamWriter(File.Create(tempConfigFile), Encoding.UTF8))
           {
-            sw.WriteLine(file.outPath);
+            sw.WriteLine(fileInfo.outPath);
           }
 
-          var outputDirectory = outFolder;
-          if (rsnStructure)
-            outputDirectory = Path.Combine(outFolder, file.projectDirectory);
+          var outputDirectory = task.OutFolder;
+          if (task.RsnStructure)
+            outputDirectory = Path.Combine(task.OutFolder, fileInfo.projectDirectory);
+
           var navisJobOutput =
-            navisCommander.BatchExportToNavis(tempConfigFile, file.serverVersion, false, outputDirectory);
-          _logger.LogInformation(navisJobOutput, file);
+            navisCommander.BatchExportToNavis(tempConfigFile, fileInfo.serverVersion, false, outputDirectory);
+          _logger.LogInformation(navisJobOutput, rawRsnFilePath);
           log.Add(navisJobOutput);
         }
         catch (Exception e)

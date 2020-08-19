@@ -37,37 +37,32 @@ namespace Server.Assembler.Api.Controllers
           return BadRequest(ModelState);
         }
 
-        var filePaths = task.Files;
+        if (task.Files.Count == 0)
+          return BadRequest("Не указаны файлы для выгрузки");
 
         var result = string.Empty;
-        var rsnFiles = new List<RsnFileInfo>();
 
-        if (filePaths.Count == 0)
-          return BadRequest();
+        //foreach (var filePath in task.Files)
+        //{
+        //  var file = new RsnFileInfo(filePath, task.RsnStructure, task.OutFolder);
 
-        foreach (var filePath in filePaths)
-        {
-          var file = new RsnFileInfo(filePath, task.RsnStructure, task.OutFolder);
+        //  if (file.rsnFilePath == null)
+        //    result += $"\nПуть для файла не может быть обработан: {file}";
 
-          if (file.rsnFilePath == null)
-            result += $"\nПуть для файла не может быть обработан: {file}";
+        //  if (!file.rsnFilePath.IsValidForRsnModelPath())
+        //    result += $"\n Не валидный файл для RSN: {file}";
 
-          if (!file.rsnFilePath.IsValidForRsnModelPath())
-            result += $"\n Не валидный файл для RSN: {file}";
+        //  rsnFiles.Add(file);
+        //}
 
-          rsnFiles.Add(file);
-        }
-
-        var exportTaskLog = navisService.BatchParallelExportModelsToNavis(
-          rsnFiles,
-          task.RsnStructure); 
+        var exportTaskLog = navisService.ParallelExportModelsToNavis(task); 
         _logger.LogInformation(exportTaskLog);
         return Ok(result + "\n" + exportTaskLog);
       }
       catch (Exception e)
       {
         _logger.LogCritical(e, "Task execution error {task}", task);
-        return BadRequest("!!! Ошибка !!!\n" + e.Message);
+        return BadRequest("Error: " + e.Message);
       }
     }
 

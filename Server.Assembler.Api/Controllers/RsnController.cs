@@ -69,7 +69,7 @@ namespace Server.Assembler.Api.Controllers
         var result = string.Empty;
 
         var exportTaskLog = exportService.ParralelExportModels(task);
-
+        _logger.LogInformation(exportTaskLog);
         return Ok(result + "\n" + exportTaskLog);
       }
       catch (Exception e)

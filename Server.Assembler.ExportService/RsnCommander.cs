@@ -64,7 +64,7 @@ namespace Server.Assembler.ModelExportService
         if (output.Length > 0)
           return string.Join("\n", output);
 
-        // Validate file creation
+        // Check if file successfully copied from RSN
         if (!File.Exists(file.outPath))
         {
           throw new Exception($"Не удалось создать файл по пути: {file.outPath}\nОшибка: {output}");
