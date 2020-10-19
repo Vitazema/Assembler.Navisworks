@@ -11,17 +11,18 @@ namespace Server.Assembler.ModelExportService
       string tool = null;
       switch (version)
       {
-        case (2017):
+        case 2017:
           tool = @"C:\Program Files\Autodesk\Navisworks Manage 2017\FiletoolsTaskRunner.exe";
           break;
 
-        case (2019):
+        case 2019:
           if (File.Exists(@"C:\Program Files\Autodesk\Navisworks Manage 2019\FiletoolsTaskRunner.exe"))
             tool = @"C:\Program Files\Autodesk\Navisworks Manage 2019\FiletoolsTaskRunner.exe";
           else if (File.Exists(@"C:\Program Files\Autodesk\Navisworks Simulate 2019\FiletoolsTaskRunner.exe"))
             tool = @"C:\Program Files\Autodesk\Navisworks Simulate 2019\FiletoolsTaskRunner.exe";
           break;
       }
+
       return !File.Exists(tool) ? null : tool;
     }
 
@@ -29,7 +30,7 @@ namespace Server.Assembler.ModelExportService
     {
       try
       {
-        string log = string.Empty;
+        var log = string.Empty;
 
         var navisTool = FindNavisTool(navisVersion);
         if (navisTool == null)
@@ -52,7 +53,7 @@ namespace Server.Assembler.ModelExportService
         process.Start();
         process.WaitForExit();
         log = process.StandardOutput.ReadToEnd() + "\n" +
-               process.StandardError.ReadToEnd();
+              process.StandardError.ReadToEnd();
         process.Close();
         return log;
       }

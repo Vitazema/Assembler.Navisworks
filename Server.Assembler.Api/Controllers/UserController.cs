@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Autodesk.Forge;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 
 namespace Server.Assembler.Api.Controllers
 {
-  public class UserController: ControllerBase
+  public class UserController : ControllerBase
   {
     [HttpGet]
     [Route("api/forge/user/profile")]
@@ -23,7 +19,7 @@ namespace Server.Assembler.Api.Controllers
       userApi.Configuration.AccessToken = creds.TokenInternal;
 
       // get the user profile
-      dynamic userProfile = await userApi.GetUserProfileAsync();
+      var userProfile = await userApi.GetUserProfileAsync();
 
       // prepare a response with name & picture
       dynamic response = new JObject();

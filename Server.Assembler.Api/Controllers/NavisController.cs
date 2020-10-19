@@ -1,15 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Server.Assembler.Domain.Entities;
 using Server.Assembler.ModelExportService.Services;
-using Server.Lib.RevitServer;
 
 namespace Server.Assembler.Api.Controllers
 {
@@ -32,10 +25,7 @@ namespace Server.Assembler.Api.Controllers
     {
       try
       {
-        if (!ModelState.IsValid)
-        {
-          return BadRequest(ModelState);
-        }
+        if (!ModelState.IsValid) return BadRequest(ModelState);
 
         if (task.Files.Count == 0)
           return BadRequest("Не указаны файлы для выгрузки");
@@ -46,16 +36,16 @@ namespace Server.Assembler.Api.Controllers
         //{
         //  var file = new RsnFileInfo(filePath, task.RsnStructure, task.OutFolder);
 
-        //  if (file.rsnFilePath == null)
+        //  if (file.RsnFilePath == null)
         //    result += $"\nПуть для файла не может быть обработан: {file}";
 
-        //  if (!file.rsnFilePath.IsValidForRsnModelPath())
+        //  if (!file.RsnFilePath.IsValidForRsnModelPath())
         //    result += $"\n Не валидный файл для RSN: {file}";
 
         //  rsnFiles.Add(file);
         //}
 
-        var exportTaskLog = navisService.ParallelExportModelsToNavis(task); 
+        var exportTaskLog = navisService.ParallelExportModelsToNavis(task);
         _logger.LogInformation(exportTaskLog);
         return Ok(result + "\n" + exportTaskLog);
       }
@@ -89,10 +79,10 @@ namespace Server.Assembler.Api.Controllers
     //    {
     //      var file = new RsnFileInfo(filePath);
 
-    //      if (file.rsnFilePath == null)
+    //      if (file.RsnFilePath == null)
     //        result += $"\nПуть для файла не может быть обработан: {file}";
 
-    //      if (!file.rsnFilePath.IsValidForRsnModelPath())
+    //      if (!file.RsnFilePath.IsValidForRsnModelPath())
     //        result += $"\n Не валидный файл для RSN: {file}";
 
     //      rsnFiles.Add(file);

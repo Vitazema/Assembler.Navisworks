@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
 using Autodesk.Forge;
+using Microsoft.AspNetCore.Mvc;
 using Server.Assembler.Domain.Entities;
 using static System.Environment;
 
 namespace Server.Assembler.Api.Controllers
 {
-  public class OAuthController: ControllerBase
+  public class OAuthController : ControllerBase
   {
     [HttpGet]
     [Route("api/forge/oauth/token")]
@@ -21,14 +18,14 @@ namespace Server.Assembler.Api.Controllers
 
       if (creds == null)
       {
-        base.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+        Response.StatusCode = (int) HttpStatusCode.Unauthorized;
         return new AccessToken();
       }
 
-      return new AccessToken()
+      return new AccessToken
       {
         access_token = creds.TokenPublic,
-        expires_in = (int)creds.ExpiresAt.Subtract(DateTime.Now).TotalSeconds
+        expires_in = (int) creds.ExpiresAt.Subtract(DateTime.Now).TotalSeconds
       };
     }
 
@@ -47,13 +44,13 @@ namespace Server.Assembler.Api.Controllers
     public string GetOAuthURL()
     {
       // prepare the sign-in URL
-      Scope[] scopes = { Scope.DataRead };
+      Scope[] scopes = {Scope.DataRead};
       var threeLeggedApi = new ThreeLeggedApi();
       var oauthUrl = threeLeggedApi.Authorize(
         GetEnvironmentVariable("FORGE_CLIENT_ID"),
         oAuthConstants.CODE,
         GetEnvironmentVariable("FORGE_CALLBACK_URL"),
-        new[] { Scope.DataRead, Scope.DataCreate, Scope.DataWrite, Scope.ViewablesRead});
+        new[] {Scope.DataRead, Scope.DataCreate, Scope.DataWrite, Scope.ViewablesRead});
 
       return oauthUrl;
     }
@@ -74,7 +71,7 @@ namespace Server.Assembler.Api.Controllers
     [Route("api/forge/clientid")]
     public dynamic GetClientID()
     {
-      return new { id = GetEnvironmentVariable("FORGE_CLIENT_ID")};
+      return new {id = GetEnvironmentVariable("FORGE_CLIENT_ID")};
     }
   }
 }

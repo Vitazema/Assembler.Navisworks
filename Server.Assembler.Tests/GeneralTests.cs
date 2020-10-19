@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
-using Server.Assembler.Domain.Entities;
 using Server.Assembler.ModelExportService;
 using Xunit;
 
@@ -13,10 +11,11 @@ namespace Server.Assembler.Tests
     [Fact]
     public void GeneralRsnToolTest()
     {
-      var commander = new RsnCommander();
-      var file = new RsnFileInfo(@"\\vpp-revittest01.main.picompany.ru\D$\RS17\Prj\0000-Navis\tst\ÑÑÑÐ.rvt");
+      var commander = new RsnCommander(null);
+      //var file = new RsnFileInfo(@"\\vpp-revittest01.main.picompany.ru\D$\RS17\Prj\0000-Navis\tst\ÑÑÑÐ.rvt");
       //var output = commander.CreateLocalFile(file);
     }
+
     [Fact]
     public void SimpleJsonRequest()
     {

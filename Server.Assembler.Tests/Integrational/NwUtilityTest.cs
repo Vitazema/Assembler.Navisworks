@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
-using System.Text;
 using Server.Assembler.ModelExportService.Services;
 using Xunit;
 
@@ -12,12 +8,12 @@ namespace Server.Assembler.Tests.Integrational
 {
   public class NwUtilityTest
   {
-    public ExportService exportService { get; set; }
-
     public NwUtilityTest()
     {
-      this.exportService = new ExportService();
+      exportService = new ExportService();
     }
+
+    public ExportService exportService { get; set; }
 
     [Fact]
     public void CompileValidArgumentCommandForNwUtility()
@@ -33,7 +29,7 @@ namespace Server.Assembler.Tests.Integrational
 
       // Compile cmd config string for NW bat utility
       var navisArgs = $"/i \"{configFilePath}\" /od \"{exportFolder}\" /version {2019}";
-      
+
       var processInfo = new ProcessStartInfo(navisTool, navisArgs)
       {
         CreateNoWindow = false,
@@ -41,7 +37,7 @@ namespace Server.Assembler.Tests.Integrational
         RedirectStandardError = true,
         RedirectStandardOutput = true
       };
-      
+
       var process = new Process();
       process.StartInfo = processInfo;
 
@@ -51,9 +47,7 @@ namespace Server.Assembler.Tests.Integrational
         var log = process.StandardOutput.ReadToEnd();
 
         process.Close();
-
       }
-
     }
   }
 }

@@ -3,14 +3,9 @@ using System.IO;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Serilog;
-using Serilog.Events;
 using Serilog.Sinks.Elasticsearch;
-using Server.Assembler.Domain;
 
 namespace Server.Assembler.Api
 {
@@ -25,7 +20,7 @@ namespace Server.Assembler.Api
         .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", true, true)
         .AddEnvironmentVariables()
         .Build();
-      
+
       // Configure and push logger
       // When using ".UseSerilog()" it will use "Log.Logger"
       var logServer = configuration.GetSection("Logging")["LogstashServer"];
@@ -79,4 +74,3 @@ namespace Server.Assembler.Api
     }
   }
 }
-

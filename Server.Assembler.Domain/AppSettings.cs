@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace Server.Assembler.Domain
+﻿namespace Server.Assembler.Domain
 {
   public class Appsettings
   {

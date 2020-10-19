@@ -1,21 +1,22 @@
 ﻿using System;
-using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
 using Autodesk.Forge;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using static System.Environment;
 
 namespace Server.Assembler.Api.Controllers
 {
   /// <summary>
-  /// Store data in session
+  ///   Store data in session
   /// </summary>
   public class Credentials
   {
     private const string FORGE_COOKIE = "ForgeApi";
-    private Credentials() { }
+
+    private Credentials()
+    {
+    }
 
     public string TokenInternal { get; set; }
     public string TokenPublic { get; set; }
@@ -25,19 +26,19 @@ namespace Server.Assembler.Api.Controllers
     public static async Task<Credentials> CreateFromCodeAsync(string code, IResponseCookies cookies)
     {
       var oauth = new ThreeLeggedApi();
-      dynamic credentialInternal = await oauth.GettokenAsync(
+      var credentialInternal = await oauth.GettokenAsync(
         GetEnvironmentVariable("FORGE_CLIENT_ID"),
         GetEnvironmentVariable("FORGE_CLIENT_SECRET"),
         oAuthConstants.AUTHORIZATION_CODE,
         code,
         GetEnvironmentVariable("FORGE_CALLBACK_URL"));
 
-      dynamic credentialPublic = await oauth.RefreshtokenAsync(
+      var credentialPublic = await oauth.RefreshtokenAsync(
         GetEnvironmentVariable("FORGE_CLIENT_ID"),
         GetEnvironmentVariable("FORGE_CLIENT_SECRET"),
         "refresh_token",
         credentialInternal.refresh_token,
-        new Scope[] { Scope.ViewablesRead });
+        new[] {Scope.ViewablesRead});
 
       var creds = new Credentials
       {
@@ -53,12 +54,13 @@ namespace Server.Assembler.Api.Controllers
     }
 
     /// <summary>
-    /// Restore the credentials from the session object, refresh if needed
+    ///   Restore the credentials from the session object, refresh if needed
     /// </summary>
     /// <param name="requestCookie"></param>
     /// <param name="responseCookie"></param>
     /// <returns></returns>
-    public static async Task<Credentials> FromSessionAsync(IRequestCookieCollection requestCookie, IResponseCookies responseCookie)
+    public static async Task<Credentials> FromSessionAsync(IRequestCookieCollection requestCookie,
+      IResponseCookies responseCookie)
     {
       if (requestCookie == null || !requestCookie.ContainsKey(FORGE_COOKIE)) return null;
 
@@ -75,26 +77,26 @@ namespace Server.Assembler.Api.Controllers
     }
 
     /// <summary>
-    /// Refresh an internal and external credentials
+    ///   Refresh an internal and external credentials
     /// </summary>
     /// <returns></returns>
     private async Task RefreshAsync()
     {
       var oauth = new ThreeLeggedApi();
 
-      dynamic credentialInternal = await oauth.RefreshtokenAsync(
+      var credentialInternal = await oauth.RefreshtokenAsync(
         GetEnvironmentVariable("FORGE_CLIENT_ID"),
         GetEnvironmentVariable("FORGE_CLIENT_SECRET"),
         "refresh_token",
         RefreshToken,
-        new Scope[] { Scope.DataRead, Scope.DataCreate, Scope.DataWrite, Scope.ViewablesRead });
+        new[] {Scope.DataRead, Scope.DataCreate, Scope.DataWrite, Scope.ViewablesRead});
 
-      dynamic credentialPublic = await oauth.RefreshtokenAsync(
+      var credentialPublic = await oauth.RefreshtokenAsync(
         GetEnvironmentVariable("FORGE_CLIENT_ID"),
         GetEnvironmentVariable("FORGE_CLIENT_SECRET"),
         "refresh_token",
         credentialInternal.refresh_token,
-        new Scope[] { Scope.ViewablesRead });
+        new[] {Scope.ViewablesRead});
 
       TokenInternal = credentialInternal.access_token;
       TokenPublic = credentialPublic.access_token;

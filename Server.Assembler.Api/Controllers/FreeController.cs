@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Server.Assembler.FreeService;
 
 namespace Server.Assembler.Api.Controllers
@@ -22,9 +17,9 @@ namespace Server.Assembler.Api.Controllers
     //[HttpPost]
     //public ActionResult<IEnumerable<string>> RelinquishModelByPath(
     //  [FromForm] string user,
-    //  [FromForm] string rawFilePath)
+    //  [FromForm] string SysFilePath)
     //{
-      
+
     //}
   }
 }

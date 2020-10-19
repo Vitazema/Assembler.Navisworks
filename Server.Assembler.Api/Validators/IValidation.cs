@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Server.Assembler.Api.Validators
+﻿namespace Server.Assembler.Api.Validators
 {
   public interface IValidation
   {
-    bool IsValid {get;}
+    bool IsValid { get; }
+    string ErrorMessage { get; }
     void Validate();
-    string ErrorMessage {get;}
   }
 }
